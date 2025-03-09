@@ -1,9 +1,5 @@
 package com.example.ads.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,19 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.TextFieldValue
-
-class ProfileCreationActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            CreateUserScreen()
-        }
-    }
-}
+import androidx.navigation.NavController
 
 @Composable
-fun CreateUserScreen() {
+fun CreateUserScreen(navController: NavController) {
     var fullName by remember { mutableStateOf(TextFieldValue()) }
     var birthDate by remember { mutableStateOf(TextFieldValue()) }
     var city by remember { mutableStateOf(TextFieldValue()) }
@@ -77,12 +64,14 @@ fun CreateUserScreen() {
             maxLines = 5
         )
 
+        Spacer(modifier = Modifier.weight(1f))
+
         // Кнопки "Отменить" и "Завершить"
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = { /* Действие при нажатии на "Отменить" */ }) {
+            Button(onClick = { navController.navigate("main_screen") }) {
                 Text("Отменить")
             }
             Button(onClick = { /* Действие при нажатии на "Завершить" */ }) {

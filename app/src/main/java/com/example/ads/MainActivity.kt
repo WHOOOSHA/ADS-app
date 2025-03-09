@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     composable("main_screen") {
                         MainScreen(navController, isLoggedIn)
                     }
-                    composable("create_user") { CreateUserScreen() }
+                    composable("create_user") { CreateUserScreen(navController) }
                 }
             }
         }
