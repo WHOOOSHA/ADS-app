@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 @Composable
 fun CreateUserScreen(navController: NavController) {
     var fullName by remember { mutableStateOf(TextFieldValue()) }
+    var login by remember { mutableStateOf(TextFieldValue()) }
     var birthDate by remember { mutableStateOf(TextFieldValue()) }
     var city by remember { mutableStateOf(TextFieldValue()) }
     var aboutMe by remember { mutableStateOf(TextFieldValue()) }
@@ -35,6 +36,14 @@ fun CreateUserScreen(navController: NavController) {
             value = fullName,
             onValueChange = { fullName = it },
             label = { Text("ФИО") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Поле ввода логина
+        TextField(
+            value = login,
+            onValueChange = { login = it },
+            label = { Text("Логин") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -71,7 +80,7 @@ fun CreateUserScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = { navController.navigate("main_screen") }) {
+            Button(onClick = { navController.popBackStack() }) {
                 Text("Отменить")
             }
             Button(onClick = { /* Действие при нажатии на "Завершить" */ }) {

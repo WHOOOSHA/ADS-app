@@ -10,6 +10,7 @@ import com.example.ads.screens.CreateUserScreen
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.ads.screens.SearchScreen
 
 class MainActivity : ComponentActivity() {
     private var isLoggedIn = false
@@ -25,6 +26,8 @@ class MainActivity : ComponentActivity() {
                         MainScreen(navController, isLoggedIn)
                     }
                     composable("create_user") { CreateUserScreen(navController) }
+                    composable("search") { SearchScreen(navController) }
+
                 }
             }
         }
