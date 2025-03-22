@@ -1,5 +1,6 @@
 package com.example.ads.screens
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,8 @@ fun CreateGroupScreen(navController: NavController) {
     var description by remember { mutableStateOf(TextFieldValue()) }
     var city by remember { mutableStateOf(TextFieldValue()) }
     val focusManager = LocalFocusManager.current
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     Column(
         modifier = Modifier
@@ -41,7 +44,7 @@ fun CreateGroupScreen(navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ImageUploader()
+        ImageUploader(selectedImageUri) { uri -> selectedImageUri = uri }
 
         TextField(
             value = name,
