@@ -1,5 +1,6 @@
 package com.example.ads.screens
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,15 +16,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.ads.R
 import com.example.ads.data.Ad
 import com.example.ads.data.Group
 import com.example.ads.data.ListType
 import com.example.ads.viewModels.SearchViewModel
+import java.io.File
 
 @Composable
 fun SearchScreen(navController: NavController, viewModel: SearchViewModel = viewModel()) {
@@ -151,11 +155,30 @@ fun GroupItem(group: Group) {
             ) { /* Действие при нажатии */ },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(painter = painterResource(id = group.image), contentDescription = "Аватарка", modifier = Modifier.size(40.dp))
+        val bitmap = group.image?.let { path ->
+            val file = File(path)
+            if (file.exists()) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+        }
+
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = "Аватарка",
+                modifier = Modifier.size(40.dp)
+            )
+        } else {
+            Image(
+                painter = painterResource(R.drawable.avatar_placeholder), // Заглушка
+                contentDescription = "Аватарка",
+                modifier = Modifier.size(40.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = group.name, style = MaterialTheme.typography.titleMedium)
     }
 }
+
 
 @Composable
 fun ListHeader(title: String, isExpanded: Boolean, onToggle: () -> Unit) {

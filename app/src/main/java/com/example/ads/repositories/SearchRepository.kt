@@ -2,7 +2,6 @@ package com.example.ads.repositories
 
 import com.example.ads.data.Ad
 import com.example.ads.data.Group
-import com.example.ads.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -15,8 +14,8 @@ class SearchRepository {
         Ad(
             authorName = "Имя $i",
             authorGroup = category,
-            authorAvatar = R.drawable.avatar_placeholder,
-            image = R.drawable.ad_image_placeholder,
+            authorAvatar = null, // Заглушка для аватара
+            image = null, // Заглушка для картинки объявления
             title = "$category - Объявление $i",
             description = "Описание объявления $i в категории $category"
         )
@@ -29,12 +28,12 @@ class SearchRepository {
             description = "Описание группы $i в категории $category",
             city = "Город",
             categories = listOf(category),
-            image = R.drawable.avatar_placeholder,
+            image = null, // Заглушка для изображения группы
             moderators = listOf("Модератор")
         )
     }
 
-    //Для имитации нагрузки используем delay(1000)
+    // Для имитации нагрузки используем delay(1000)
     fun getInitialResults(): Flow<Pair<List<Ad>, List<Group>>> = flow {
         delay(1000)
         emit(allAds.take(5) to allGroups.take(5))

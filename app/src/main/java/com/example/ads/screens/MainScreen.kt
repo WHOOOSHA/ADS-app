@@ -1,5 +1,6 @@
 package com.example.ads.screens
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,8 +16,10 @@ import androidx.compose.ui.unit.dp
 import com.example.ads.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.navigation.NavController
 import com.example.ads.data.Ad
+import java.io.File
 
 @Composable
 fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
@@ -24,24 +27,24 @@ fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
         Ad(
             authorName = "Автор 1",
             authorGroup = "Группа A",
-            authorAvatar = R.drawable.avatar_placeholder,
-            image = R.drawable.ad_image_placeholder,
+            authorAvatar = null, // Файл не указан, будет использована заглушка
+            image = null, // Файл не указан, будет использована заглушка
             title = "Объявление 1",
             description = "Описание объявления 1"
         ),
         Ad(
             authorName = "Автор 2",
             authorGroup = "Группа B",
-            authorAvatar = R.drawable.avatar_placeholder,
-            image = R.drawable.ad_image_placeholder,
+            authorAvatar = null,
+            image = null,
             title = "Объявление 2",
             description = "Описание объявления 2"
         ),
         Ad(
             authorName = "Автор 3",
             authorGroup = "Группа C",
-            authorAvatar = R.drawable.avatar_placeholder,
-            image = R.drawable.ad_image_placeholder,
+            authorAvatar = null,
+            image = null,
             title = "Объявление 3",
             description = "Описание объявления 3"
         )
@@ -49,16 +52,18 @@ fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        bottomBar = { BottomNavigationBar(navController, isLoggedIn) } // Передаем isLoggedIn в BottomNavigationBar
+        bottomBar = { BottomNavigationBar(navController, isLoggedIn) }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 AdList(ads = adsList)
             }
 
-            NewADS(modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp), navController, isLoggedIn
+            NewADS(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                navController, isLoggedIn
             )
         }
     }
@@ -75,18 +80,35 @@ fun AdList(ads: List<Ad>) {
 
 @Composable
 fun AdItem(ad: Ad) {
-    Card(modifier = Modifier
-        .padding(8.dp)
-        .fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = ad.authorAvatar),
-                    contentDescription = "Аватар автора",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color.Gray)
-                )
+                val avatarBitmap = ad.authorAvatar?.takeIf { File(it).exists() }?.let { path ->
+                    BitmapFactory.decodeFile(path)?.asImageBitmap()
+                }
+
+                if (avatarBitmap != null) {
+                    Image(
+                        bitmap = avatarBitmap,
+                        contentDescription = "Аватар автора",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.Gray)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.avatar_placeholder),
+                        contentDescription = "Аватар автора",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.Gray)
+                    )
+                }
+
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(text = ad.authorName, style = MaterialTheme.typography.titleMedium)
@@ -95,14 +117,30 @@ fun AdItem(ad: Ad) {
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            Image(
-                painter = painterResource(id = ad.image),
-                contentDescription = "Изображение объявления",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .background(Color.LightGray)
-            )
+            val imageBitmap = ad.image?.takeIf { File(it).exists() }?.let { path ->
+                BitmapFactory.decodeFile(path)?.asImageBitmap()
+            }
+
+            if (imageBitmap != null) {
+                Image(
+                    bitmap = imageBitmap,
+                    contentDescription = "Изображение объявления",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .background(Color.LightGray)
+                )
+            } else {
+                Image(
+                    painter = painterResource(R.drawable.ad_image_placeholder),
+                    contentDescription = "Изображение объявления",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .background(Color.LightGray)
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(text = ad.title, style = MaterialTheme.typography.titleMedium)
