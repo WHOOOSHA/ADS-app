@@ -1,10 +1,6 @@
 package com.example.ads.screens
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,23 +17,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import com.example.ads.viewModels.CreateUserViewModel
 
 @Composable
-fun CreateUserScreen(navController: NavController) {
+fun CreateUserScreen(navController: NavController, viewModel: CreateUserViewModel = viewModel()) {
     val context = LocalContext.current
-
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var name by remember { mutableStateOf(TextFieldValue("")) }
-    var login by remember { mutableStateOf(TextFieldValue("")) }
-    var dateOfBirth by remember { mutableStateOf(TextFieldValue("")) }
-    var city by remember { mutableStateOf(TextFieldValue("")) }
-    var about by remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         modifier = Modifier
@@ -46,40 +33,40 @@ fun CreateUserScreen(navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ImageUploader(imageUri) { imageUri = it }
+        ImageUploader(viewModel.imageUri.value) { viewModel.imageUri.value = it }
 
         TextField(
-            value = name,
-            onValueChange = { name = it },
+            value = viewModel.name.value,
+            onValueChange = { viewModel.name.value = it },
             label = { Text("ФИО") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
-            value = login,
-            onValueChange = { login = it },
+            value = viewModel.login.value,
+            onValueChange = { viewModel.login.value = it },
             label = { Text("Логин") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
-            value = dateOfBirth,
-            onValueChange = { dateOfBirth = it },
+            value = viewModel.dateOfBirth.value,
+            onValueChange = { viewModel.dateOfBirth.value = it },
             label = { Text("Дата рождения") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
-            value = city,
-            onValueChange = { city = it },
+            value = viewModel.city.value,
+            onValueChange = { viewModel.city.value = it },
             label = { Text("Город") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
-            value = about,
-            onValueChange = { about = it },
+            value = viewModel.about.value,
+            onValueChange = { viewModel.about.value = it },
             label = { Text("О себе") },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 5
@@ -95,10 +82,9 @@ fun CreateUserScreen(navController: NavController) {
                 Text("Отменить")
             }
             Button(onClick = {
-                if (login.text.isNotBlank()) {
-                    saveUserData(context, name.text, login.text, dateOfBirth.text, city.text, about.text)
-                    imageUri?.let { saveImageToInternalStorage(context, it, login.text) }
-                    navController.navigate("profile/${login.text}")
+                if (viewModel.login.value.isNotBlank()) {
+                    viewModel.saveUserData()
+                    navController.navigate("profile/${viewModel.login.value}")
                 }
             }) {
                 Text("Завершить")
@@ -124,52 +110,14 @@ fun ImageUploader(selectedImageUri: Uri?, onImageSelected: (Uri) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         if (selectedImageUri != null) {
-            val bitmap: Bitmap? = MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
-            bitmap?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "Выбранное изображение",
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "Выбранное изображение",
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             Text("Загрузить изображение")
         }
-    }
-}
-
-fun saveUserData(context: Context, name: String, login: String, dateOfBirth: String, city: String, about: String) {
-    val sharedPreferences = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
-    with(sharedPreferences.edit()) {
-        putString("name", name)
-        putString("login", login)
-        putString("dateOfBirth", dateOfBirth)
-        putString("city", city)
-        putString("about", about)
-        apply()
-    }
-}
-
-fun saveImageToInternalStorage(context: Context, imageUri: Uri, login: String) {
-    val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        val source = ImageDecoder.createSource(context.contentResolver, imageUri)
-        ImageDecoder.decodeBitmap(source)
-    } else {
-        MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-    }
-
-    val directory = File(context.filesDir, "user_images")
-    if (!directory.exists()) {
-        directory.mkdirs()
-    }
-
-    val file = File(directory, "$login.jpg")
-    try {
-        val outputStream = FileOutputStream(file)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-        outputStream.flush()
-        outputStream.close()
-    } catch (e: IOException) {
-        e.printStackTrace()
     }
 }
