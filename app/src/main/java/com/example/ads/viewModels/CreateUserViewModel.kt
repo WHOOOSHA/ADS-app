@@ -1,84 +1,65 @@
-//package com.example.ads.viewModels
-//
-//import android.app.Application
-//import android.content.ContentValues
-//import android.content.Context
-//import android.content.SharedPreferences
-//import android.graphics.Bitmap
-//import android.net.Uri
-//import android.provider.MediaStore
-//import androidx.lifecycle.AndroidViewModel
-//import androidx.lifecycle.viewModelScope
-//import com.example.ads.data.User
-//import kotlinx.coroutines.launch
-//import java.io.OutputStream
-//
-//class CreateUserViewModel(application: Application) : AndroidViewModel(application) {
-//    private val context = application.applicationContext
-//    private val sharedPreferences: SharedPreferences =
-//        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-//
-//    var user = User()
-//        private set
-//
-//    fun updateFullName(fullName: String) {
-//        user = user.copy(name = fullName)
-//    }
-//
-//    fun updateLogin(login: String) {
-//        user = user.copy(login = login)
-//    }
-//
-//    fun updateBirthDate(birthDate: String) {
-//        user = user.copy(dateOfBirth = birthDate)
-//    }
-//
-//    fun updateCity(city: String) {
-//        user = user.copy(city = city)
-//    }
-//
-//    fun updateAboutMe(aboutMe: String) {
-//        user = user.copy(about = aboutMe)
-//    }
-//
-//    fun updateImageUri(uri: Uri?) {
-//        user = user.copy(imageUri = uri)
-//    }
-//
-//    fun saveUserData() {
-//        viewModelScope.launch {
-//            with(sharedPreferences.edit()) {
-//                putString("full_name", user.name)
-//                putString("login", user.login)
-//                putString("birth_date", user.dateOfBirth)
-//                putString("city", user.city)
-//                putString("about_me", user.about)
-//
-//                user.imageUri?.let { uri ->
-//                    val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-//                    val savedUri = saveImageToInternalStorage(bitmap)
-//                    putString("image_uri", savedUri.toString())
-//                }
-//
-//                apply()
-//            }
-//        }
-//    }
-//
-//    private fun saveImageToInternalStorage(bitmap: Bitmap): Uri? {
-//        val filename = "user_profile_${System.currentTimeMillis()}.jpg"
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-//            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-//            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/UserImages")
-//        }
-//
-//        val uri: Uri? =
-//            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-//        uri?.let {
-//            val outputStream: OutputStream? = context.contentResolver.openOutputStream(it)
-//            outputStream?.use { stream -> bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream) }
-//        }
-//        return uri
-//    }
-//}
+package com.example.ads.viewModels
+
+import android.app.Application
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+
+class CreateUserViewModel(application: Application) : AndroidViewModel(application) {
+    private val context = application.applicationContext
+    private val sharedPreferences = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+
+    var name = mutableStateOf("")
+    var login = mutableStateOf("")
+    var dateOfBirth = mutableStateOf("")
+    var city = mutableStateOf("")
+    var about = mutableStateOf("")
+    var imageUri = mutableStateOf<Uri?>(null)
+
+    fun saveUserData() {
+        viewModelScope.launch {
+            with(sharedPreferences.edit()) {
+                putString("name", name.value)
+                putString("login", login.value)
+                putString("dateOfBirth", dateOfBirth.value)
+                putString("city", city.value)
+                putString("about", about.value)
+                apply()
+            }
+            imageUri.value?.let { saveImageToInternalStorage(it, login.value) }
+        }
+    }
+
+    private fun saveImageToInternalStorage(imageUri: Uri, login: String) {
+        val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(context.contentResolver, imageUri)
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+        }
+
+        val directory = File(context.filesDir, "user_images")
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
+
+        val file = File(directory, "$login.jpg")
+        try {
+            FileOutputStream(file).use { outputStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+}
