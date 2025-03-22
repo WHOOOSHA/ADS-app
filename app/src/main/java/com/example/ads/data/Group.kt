@@ -5,6 +5,6 @@ data class Group(
     val description: String,
     val city: String,
     val categories: List<String>,
-    val image: Int,
+    val image: String?,
     val moderators: List<String>
 )

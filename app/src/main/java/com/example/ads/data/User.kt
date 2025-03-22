@@ -5,6 +5,6 @@ data class User (
     val name: String,
     val dateOfBirth: LocalDate,
     val city: String,
-    val image: Int,
+    val image: String?,
     val about: String,
 )
