@@ -20,9 +20,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.navigation.NavController
 import com.example.ads.data.Ad
 import java.io.File
+import android.content.Context
 
 @Composable
-fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
+fun MainScreen(navController: NavController, context: Context) {
     val adsList = listOf(
         Ad(
             authorName = "Автор 1",
@@ -52,7 +53,7 @@ fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        bottomBar = { BottomNavigationBar(navController, isLoggedIn) }
+        bottomBar = { BottomNavigationBar(navController, context) }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -63,7 +64,7 @@ fun MainScreen(navController: NavController, isLoggedIn: Boolean) {
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp),
-                navController, isLoggedIn
+                navController, context
             )
         }
     }
@@ -151,13 +152,16 @@ fun AdItem(ad: Ad) {
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavController, isLoggedIn: Boolean) {
+fun BottomNavigationBar(navController: NavController, context: Context) {
+    val sharedPreferences = context.getSharedPreferences("UserData", Context.MODE_PRIVATE)
+    val login = sharedPreferences.getString("login", null)
+
     BottomAppBar {
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(onClick = { /* Действие для кнопки "Главная" */ }) {
+            IconButton(onClick = { navController.navigate("home") }) {
                 Icon(imageVector = Icons.Filled.Home, contentDescription = "Главная")
             }
             Text(text = "Главная")
@@ -176,10 +180,10 @@ fun BottomNavigationBar(navController: NavController, isLoggedIn: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             IconButton(onClick = {
-                if (!isLoggedIn) {
-                    navController.navigate("create_user")
+                if (!login.isNullOrEmpty()) {
+                    navController.navigate("profile/$login")
                 } else {
-                    // Действие при нажатии, если пользователь вошел
+                    navController.navigate("create_user")
                 }
             }) {
                 Icon(imageVector = Icons.Filled.Person, contentDescription = "Мой профиль")
@@ -190,9 +194,12 @@ fun BottomNavigationBar(navController: NavController, isLoggedIn: Boolean) {
 }
 
 @Composable
-fun NewADS(modifier: Modifier = Modifier, navController: NavController, isLoggedIn: Boolean) {
+fun NewADS(modifier: Modifier = Modifier, navController: NavController, context: Context) {
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    val login = sharedPreferences.getString("user_login", null)
+
     Button(onClick = {
-        if (!isLoggedIn) {
+        if (login == null) {
             navController.navigate("create_user")
         } else {
             // Действие при нажатии, если пользователь вошел
@@ -201,4 +208,3 @@ fun NewADS(modifier: Modifier = Modifier, navController: NavController, isLogged
         Icon(imageVector = Icons.Filled.Add, contentDescription = "Добавить")
     }
 }
-

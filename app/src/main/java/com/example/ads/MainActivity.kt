@@ -2,7 +2,6 @@ package com.example.ads
 
 import android.os.Build
 import android.os.Bundle
-import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +15,8 @@ import com.example.ads.screens.MainScreen
 import com.example.ads.screens.CreateUserScreen
 import com.example.ads.screens.SearchScreen
 import com.example.ads.screens.ProfileScreen
+import com.example.ads.viewModels.ProfileViewModel
+import com.example.ads.repositories.UserRepository
 import com.example.ads.ui.theme.ADSTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,10 +29,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             ADSTheme {
                 val navController = rememberNavController()
+                val userRepository = UserRepository(this)
+                val profileViewModel = ProfileViewModel(userRepository)
 
                 NavHost(navController, startDestination = "main_screen") {
                     composable("main_screen") {
-                        MainScreen(navController, isLoggedIn)
+                        MainScreen(navController, this@MainActivity)
                     }
                     composable("create_user") { CreateUserScreen(navController) }
                     composable("search") { SearchScreen(navController) }
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("login") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val login = backStackEntry.arguments?.getString("login")
-                        ProfileScreen(navController, login)
+                        ProfileScreen(navController, login, profileViewModel)
                     }
                 }
             }
